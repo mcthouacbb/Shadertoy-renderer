@@ -7,9 +7,21 @@
         <link href="style.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
-        <p id="render-width">Width: 300</p>
-        <p id="render-height">Height: 300</p>
-        <p id="render-time">Time: 0.00s</p>
+        <h3>Warning: There may be some flickering during scrolling</h3>
+        <div class="num-input">
+            <p>Width:</p>
+            <input id="render-width" class="slim" type="number" />
+        </div>
+        <div class="num-input">
+            <p>Height:</p>
+            <input id="render-height" class="slim" type="number" />
+        </div>
+        <div class="num-input">
+            <p>Time:</p>
+            <input id="render-time" class="slim" type="number" value="0.00" />
+            <p>s</p>
+            <button id="toggle-play">Pause</button>
+        </div>
         <canvas id="canvas"></canvas>
 
         <script src="src/shaders.js"></script>

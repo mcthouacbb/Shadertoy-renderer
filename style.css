@@ -1,0 +1,13 @@
+.num-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+input.slim {
+    height: 30px;
+}
+
+canvas {
+    image-rendering: pixelated;
+}
