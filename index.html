@@ -9,6 +9,17 @@
     <body>
         <h3>Warning: There may be some flickering during scrolling</h3>
         <div class="num-input">
+            <p>Dithering mode: &nbsp;</p>
+            <select id="dither-mode">
+                <option value="dynamic">Dynamic Dithering</option>
+                <option value="white-noise">White Noise</option>
+                <option value="blue-noise">Blue Noise</option>
+                <option value="bayer2">Bayer 4x4</option>
+                <option value="bayer3">Bayer 8x8</option>
+                <option value="none">No Dithering</option>
+            </select>
+        </div>
+        <div class="num-input">
             <p>Width:</p>
             <input id="render-width" class="slim" type="number" />
         </div>
@@ -16,11 +27,11 @@
             <p>Height:</p>
             <input id="render-height" class="slim" type="number" />
         </div>
+        <button id="toggle-play">Pause</button>
         <div class="num-input">
             <p>Time:</p>
             <input id="render-time" class="slim" type="number" value="0.00" />
             <p>s</p>
-            <button id="toggle-play">Pause</button>
         </div>
         <canvas id="canvas"></canvas>
 

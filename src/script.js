@@ -88,6 +88,31 @@ function createDitherProgram(mode) {
     return createProgram(ditherVS, ditherFS);
 }
 
+let modeInput = document.getElementById("dither-mode");
+modeInput.addEventListener("input", () => {
+    switch (modeInput.value) {
+        case "dynamic":
+            ditherProgram = createDitherProgram(DitherMode.DYNAMIC);
+            break;
+        case "white-noise":
+            ditherProgram = createDitherProgram(DitherMode.WHITE_NOISE);
+            break;
+        case "blue-noise":
+            ditherProgram = createDitherProgram(DitherMode.BLUE_NOISE);
+            break;
+        case "bayer2":
+            ditherProgram = createDitherProgram(DitherMode.BAYER2);
+            break;
+        case "bayer3":
+            ditherProgram = createDitherProgram(DitherMode.BAYER3);
+            break;
+        case "none":
+            ditherProgram = createDitherProgram(DitherMode.NO_DITHER);
+            break;
+    }
+    render();
+});
+
 let widthInput = document.getElementById("render-width");
 let heightInput = document.getElementById("render-height");
 
