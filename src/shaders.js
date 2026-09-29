@@ -304,14 +304,54 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     }
 }`;
 
-const ditherShader = `#define DITHER 1
-#define WHITE_NOISE 0
-#define BLUE_NOISE 0
-#define BAYER2 0
-#define BAYER3 0
-#define DYNAMIC_DITHER 1
+const DitherMode = Object.freeze({
+    NO_DITHER: 0,
+    WHITE_NOISE: 1,
+    BLUE_NOISE: 2,
+    BAYER2: 3,
+    BAYER3: 4,
+    DYNAMIC: 5,
+});
 
-uint murmurHash(uint x) {
+function ditherModeDefs(mode) {
+    let dither = 1;
+    let whiteNoise = 0;
+    let blueNoise = 0;
+    let bayer2 = 0;
+    let bayer3 = 0;
+    let dynamic = 0;
+    switch (mode) {
+        case DitherMode.NO_DITHER:
+            dither = 0;
+            break;
+        case DitherMode.WHITE_NOISE:
+            whiteNoise = 1;
+            break;
+        case DitherMode.BLUE_NOISE:
+            blueNoise = 1;
+            break;
+        case DitherMode.BAYER2:
+            bayer2 = 1;
+            break;
+        case DitherMode.BAYER3:
+            bayer3 = 1;
+            break;
+        case DitherMode.DYNAMIC:
+            dynamic = 1;
+            break;
+        default:
+            throw new Error("Invalid mode passed to ditherModeDefs()");
+    }
+
+    return `#define DITHER ${dither}
+#define WHITE_NOISE ${whiteNoise}
+#define BLUE_NOISE ${blueNoise}
+#define BAYER2 ${bayer2}
+#define BAYER3 ${bayer3}
+#define DYNAMIC_DITHER ${dynamic}\n\n`;
+}
+
+const ditherShader = `uint murmurHash(uint x) {
     x ^= x >> 16;
     x *= 0x85ebca6bu;
     x ^= x >> 13;

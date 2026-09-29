@@ -79,6 +79,15 @@ function createProgram(vertexShader, fragmentShader) {
     gl.deleteProgram(program);
 }
 
+function createDitherProgram(mode) {
+    let ditherVS = createShader(gl.VERTEX_SHADER, fullscreenQuadShader);
+    let ditherFS = createShader(
+        gl.FRAGMENT_SHADER,
+        ditherHeader + ditherModeDefs(mode) + ditherShader
+    );
+    return createProgram(ditherVS, ditherFS);
+}
+
 let widthInput = document.getElementById("render-width");
 let heightInput = document.getElementById("render-height");
 
@@ -249,9 +258,7 @@ let raymarchFS = createShader(
 );
 let raymarchProgram = createProgram(raymarchVS, raymarchFS);
 
-let ditherVS = createShader(gl.VERTEX_SHADER, fullscreenQuadShader);
-let ditherFS = createShader(gl.FRAGMENT_SHADER, ditherHeader + ditherShader);
-let ditherProgram = createProgram(ditherVS, ditherFS);
+let ditherProgram = createDitherProgram(DitherMode.DYNAMIC);
 
 let texChannel0;
 let fbChannel0;
