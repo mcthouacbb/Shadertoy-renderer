@@ -34,8 +34,10 @@ function render() {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
+let runAnimate = false;
 function startAnimation() {
     prevTime = performance.now();
+    runAnimate = true;
     window.requestAnimationFrame(animate);
 }
 
@@ -47,8 +49,99 @@ function animate() {
     prevTime = currTime;
     setCurrTime(time + dt);
 
-    if (play) {
+    if (play && runAnimate) {
         window.requestAnimationFrame(animate);
+    }
+}
+
+let keys = new Map();
+document.addEventListener("keydown", (e) => {
+    keys.set(e.key, true);
+});
+document.addEventListener("keyup", (e) => {
+    keys.set(e.key, false);
+});
+
+function startControls() {
+    prevTime = performance.now();
+    cameraPosX = 0;
+    cameraPosY = 7;
+    cameraPosZ = 0;
+    cameraRotationX = 0;
+    cameraRotationY = 0;
+    window.requestAnimationFrame(runControls);
+}
+
+let cameraRotationX = 0;
+let cameraRotationY = 0;
+
+function rotateCamera(e) {
+    cameraRotationX -= e.movementY / 100.0;
+    cameraRotationX = Math.min(
+        Math.max(cameraRotationX, -Math.PI / 2),
+        Math.PI / 2
+    );
+    cameraRotationY -= e.movementX / 100.0;
+}
+
+let cameraPosX = 0;
+let cameraPosY = 10;
+let cameraPosZ = 0;
+function runControls() {
+    render();
+    let currTime = performance.now();
+    let dt = (currTime - prevTime) / 1000;
+    prevTime = currTime;
+
+    if (play) {
+        setCurrTime(time + dt);
+    }
+
+    const SPEED = 6;
+
+    if (keys.get("w")) {
+        cameraPosZ += SPEED * Math.cos(cameraRotationY) * dt;
+        cameraPosX -= SPEED * Math.sin(cameraRotationY) * dt;
+    }
+
+    if (keys.get("s")) {
+        cameraPosZ -= SPEED * Math.cos(cameraRotationY) * dt;
+        cameraPosX += SPEED * Math.sin(cameraRotationY) * dt;
+    }
+
+    if (keys.get("a")) {
+        cameraPosZ -= SPEED * Math.sin(cameraRotationY) * dt;
+        cameraPosX -= SPEED * Math.cos(cameraRotationY) * dt;
+    }
+
+    if (keys.get("d")) {
+        cameraPosZ += SPEED * Math.sin(cameraRotationY) * dt;
+        cameraPosX += SPEED * Math.cos(cameraRotationY) * dt;
+    }
+
+    if (keys.get("e") || keys.get(" ")) {
+        cameraPosY += SPEED * dt;
+    }
+
+    if (keys.get("q") || keys.get("Shift")) {
+        cameraPosY -= SPEED * dt;
+    }
+
+    gl.useProgram(raymarchProgram);
+    gl.uniform3f(
+        gl.getUniformLocation(raymarchProgram, "uCameraPos"),
+        cameraPosX,
+        cameraPosY,
+        cameraPosZ
+    );
+    gl.uniform2f(
+        gl.getUniformLocation(raymarchProgram, "uCameraRotation"),
+        cameraRotationX,
+        cameraRotationY
+    );
+
+    if (manualControls) {
+        window.requestAnimationFrame(runControls);
     }
 }
 
@@ -86,6 +179,17 @@ function createDitherProgram(mode) {
         ditherHeader + ditherModeDefs(mode) + ditherShader
     );
     return createProgram(ditherVS, ditherFS);
+}
+
+function createRaymarchProgram(manualControls) {
+    let raymarchVS = createShader(gl.VERTEX_SHADER, fullscreenQuadShader);
+    let raymarchFS = createShader(
+        gl.FRAGMENT_SHADER,
+        raymarchHeader +
+            (manualControls ? "\n#define MANUAL_CONTROLS\n" : "") +
+            raymarchShader
+    );
+    return createProgram(raymarchVS, raymarchFS);
 }
 
 let modeInput = document.getElementById("dither-mode");
@@ -251,6 +355,26 @@ togglePlayButton.addEventListener("click", () => {
     }
 });
 
+let manualControls = false;
+let toggleControlsButton = document.getElementById("toggle-controls");
+toggleControlsButton.addEventListener("click", () => {
+    if (manualControls) {
+        manualControls = false;
+        toggleControlsButton.innerText = "Enable Manual Camera Controls";
+        raymarchProgram = createRaymarchProgram(false);
+
+        if (play) {
+            startAnimation();
+        }
+    } else {
+        manualControls = true;
+        toggleControlsButton.innerText = "Enable Automatic Camera Controls";
+        runAnimate = false;
+        raymarchProgram = createRaymarchProgram(true);
+        startControls();
+    }
+});
+
 function loadImage(url) {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -272,17 +396,27 @@ if (!extF32Framebuffer) {
     );
 }
 
+canvas.addEventListener("click", () => {
+    canvas.requestPointerLock();
+});
+
+document.addEventListener("pointerlockchange", () => {
+    if (document.pointerLockElement == canvas) {
+        document.addEventListener("mousemove", rotateCamera);
+    } else {
+        document.removeEventListener("mousemove", rotateCamera);
+    }
+});
+
+document.getElementById("fullscreen").addEventListener("click", async () => {
+    await canvas.requestFullscreen();
+});
+
 // hardcoded for now
 let width = 0;
 let height = 0;
 
-let raymarchVS = createShader(gl.VERTEX_SHADER, fullscreenQuadShader);
-let raymarchFS = createShader(
-    gl.FRAGMENT_SHADER,
-    raymarchHeader + raymarchShader
-);
-let raymarchProgram = createProgram(raymarchVS, raymarchFS);
-
+let raymarchProgram = createRaymarchProgram(false);
 let ditherProgram = createDitherProgram(DitherMode.DYNAMIC);
 
 let texChannel0;

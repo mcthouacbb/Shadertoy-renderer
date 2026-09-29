@@ -28,11 +28,17 @@
             <input id="render-height" class="slim" type="number" />
         </div>
         <button id="toggle-play">Pause</button>
+        <button id="toggle-controls">Enable Manual Camera Controls</button>
         <div class="num-input">
             <p>Time:</p>
             <input id="render-time" class="slim" type="number" value="0.00" />
             <p>s</p>
         </div>
+        <button id="fullscreen">Fullscreen (Does not change resolution)</button>
+        <p>
+            Manual Camera Controls: click the canvas to enable mouse look. Use
+            WASD to move laterally. Use E/Space and Q/Shift to move vertically
+        </p>
         <canvas id="canvas"></canvas>
 
         <script src="src/shaders.js"></script>

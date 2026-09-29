@@ -52,6 +52,32 @@ const raymarchShader = `#define HUGE_NUM 1e30
 #define SURFACE_EPS 0.001
 #define PI 3.14159265358979323
 
+#ifdef MANUAL_CONTROLS
+
+uniform vec3 uCameraPos;
+uniform vec2 uCameraRotation;
+
+mat3 rotateX(float rotationAngle) {
+    float sinAng = sin(rotationAngle);
+    float cosAng = cos(rotationAngle);
+    return mat3(
+        1,      0,       0,
+        0, cosAng, -sinAng,
+        0, sinAng,  cosAng
+    );
+}
+mat3 rotateY(float rotationAngle) {
+    float sinAng = sin(rotationAngle);
+    float cosAng = cos(rotationAngle);
+    return mat3(
+         cosAng, 0, sinAng,
+              0, 1,      0,
+        -sinAng, 0, cosAng
+    );
+}
+
+#endif
+
 const vec3 REP_PERIOD = vec3(5.0, 25.0, 5.0);
 
 mat3 lookAt(vec3 from, vec3 to, vec3 up) {
@@ -286,14 +312,20 @@ vec3 cameraCurve(float t) {
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     vec2 uv = ((fragCoord - iResolution.xy / 2.0) / (iResolution.yy / 2.0));
-    
+
+#ifdef MANUAL_CONTROLS
+    vec3 ro = uCameraPos;
+    mat3 rotation = rotateY(uCameraRotation.y) * rotateX(uCameraRotation.x);
+    vec3 rd = normalize(rotation * vec3(uv, 1.0));
+#else
     vec3 ro = cameraCurve(iTime);
     mat3 rotation = lookAt(ro, vec3(0.5, 0.8, 0.5) * cameraCurve(iTime + 1.0), vec3(0.0, 1.0, 0.0));
 
     //vec3 ro = 2.5 * vec3(cos(iTime / 2.0), 0.2, sin(iTime / 2.0));
     //mat3 rotation = lookAt(ro, vec3(0.0), vec3(0.0, 1.0, 0.0));
     vec3 rd = normalize(rotation * vec3(uv, 1.0));
-    
+#endif
+
     vec4 result = render(ro, rd);
     vec3 color = result.xyz;
     float t = result.w;
